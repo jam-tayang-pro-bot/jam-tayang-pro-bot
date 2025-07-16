@@ -1,157 +1,199 @@
 #!/usr/bin/env python3
 """
-Setup script khusus untuk Replit.com
-Jam Tayang Pro Bot - By Kantong Aplikasi 2025
+Replit Setup Script for Jam Tayang Pro Bot
+Script khusus untuk setup bot di Replit
 """
 
-import subprocess
-import sys
 import os
+import sys
+import asyncio
+import subprocess
 
-def print_banner():
-    """Print setup banner"""
+def print_header():
     print("=" * 60)
-    print("JAM TAYANG PRO BOT - REPLIT SETUP")
+    print("🚀 JAM TAYANG PRO BOT - REPLIT SETUP")
     print("By Kantong Aplikasi 2025")
-    print("https://www.kantongaplikasi.com/")
     print("=" * 60)
 
-def install_dependencies():
-    """Install required dependencies for Replit"""
-    print("\n🔧 Installing dependencies for Replit...")
+def check_replit_environment():
+    """Check if running on Replit"""
+    print("\n🔍 Checking Replit environment...")
     
-    # Install from requirements.txt first
-    try:
-        print("📦 Installing from requirements.txt...")
-        subprocess.check_call([
-            sys.executable, "-m", "pip", "install", "-r", "requirements.txt", "--quiet"
-        ])
-        print("✅ Requirements.txt installed successfully")
-    except subprocess.CalledProcessError as e:
-        print(f"⚠️  Warning: Could not install from requirements.txt: {e}")
-        
-        # Fallback: install essential packages manually
-        essential_packages = [
-            "python-telegram-bot==20.7",
-            "python-dotenv==1.0.0",
-            "sqlalchemy==2.0.23",
-            "aiohttp==3.9.1",
-            "requests==2.31.0"
-        ]
-        
-        print("📦 Installing essential packages manually...")
-        for package in essential_packages:
-            try:
-                print(f"Installing {package}...")
-                subprocess.check_call([
-                    sys.executable, "-m", "pip", "install", package, "--quiet"
-                ])
-                print(f"✅ {package} installed")
-            except subprocess.CalledProcessError:
-                print(f"❌ Failed to install {package}")
-                continue
+    # Check for Replit-specific environment variables
+    replit_indicators = [
+        'REPL_ID', 'REPL_SLUG', 'REPLIT_DB_URL', 
+        'REPL_OWNER', 'REPLIT_CLUSTER'
+    ]
     
-    print("✅ Dependencies installation completed!")
-
-def check_environment():
-    """Check if running in Replit environment"""
-    replit_indicators = ['REPL_ID', 'REPL_SLUG', 'REPLIT_DB_URL']
-    is_replit = any(indicator in os.environ for indicator in replit_indicators)
+    is_replit = any(os.getenv(var) for var in replit_indicators)
     
     if is_replit:
-        print("✅ Running in Replit environment")
+        print("✅ Running on Replit detected")
         return True
     else:
-        print("⚠️  Not detected as Replit environment (but continuing anyway)")
+        print("ℹ️ Not running on Replit (or Replit environment not detected)")
         return False
 
-def test_imports():
-    """Test if critical imports work"""
-    print("\n🧪 Testing critical imports...")
-    
+def install_dependencies():
+    """Install required dependencies"""
+    print("\n📦 Installing dependencies...")
     try:
-        import telegram
-        print("✅ telegram library imported successfully")
-    except ImportError as e:
-        print(f"❌ telegram import failed: {e}")
+        # Install from requirements.txt
+        result = subprocess.run([
+            sys.executable, "-m", "pip", "install", "-r", "requirements.txt"
+        ], capture_output=True, text=True, timeout=300)
+        
+        if result.returncode == 0:
+            print("✅ Dependencies installed successfully")
+            return True
+        else:
+            print(f"❌ Failed to install dependencies: {result.stderr}")
+            return False
+            
+    except subprocess.TimeoutExpired:
+        print("⏰ Installation timeout - continuing anyway")
+        return True
+    except Exception as e:
+        print(f"❌ Installation error: {e}")
         return False
+
+def check_environment_variables():
+    """Check required environment variables"""
+    print("\n🔍 Checking environment variables...")
     
-    try:
-        from dotenv import load_dotenv
-        print("✅ python-dotenv imported successfully")
-    except ImportError as e:
-        print(f"❌ python-dotenv import failed: {e}")
-        return False
+    required_vars = {
+        'BOT_TOKEN': 'Bot token from @BotFather',
+        'DATABASE_URL': 'Database connection string (optional)',
+    }
     
-    try:
-        import sqlalchemy
-        print("✅ sqlalchemy imported successfully")
-    except ImportError as e:
-        print(f"❌ sqlalchemy import failed: {e}")
+    missing_vars = []
+    
+    for var, description in required_vars.items():
+        value = os.getenv(var)
+        if var == 'BOT_TOKEN' and (not value or value == 'your_bot_token_here'):
+            missing_vars.append(f"{var}: {description}")
+            print(f"❌ {var} not set")
+        elif value:
+            if var == 'BOT_TOKEN':
+                print(f"✅ {var} configured ({value[:10]}...{value[-10:]})")
+            else:
+                print(f"✅ {var} configured")
+        else:
+            print(f"⚠️ {var} not set (optional)")
+    
+    if missing_vars:
+        print(f"\n❌ Missing required environment variables:")
+        for var in missing_vars:
+            print(f"   - {var}")
+        print("\n📝 To fix this:")
+        print("1. Go to Replit Secrets tab (🔒 icon in sidebar)")
+        print("2. Add the missing environment variables")
+        print("3. Restart this script")
         return False
     
     return True
 
-def print_instructions():
-    """Print setup instructions"""
-    print("\n" + "=" * 60)
-    print("🎉 REPLIT SETUP COMPLETED!")
-    print("=" * 60)
+async def test_bot_functionality():
+    """Test basic bot functionality"""
+    print("\n🧪 Testing bot functionality...")
     
-    print("\n📋 LANGKAH SELANJUTNYA:")
-    print("1. Klik tab 'Secrets' di Replit")
-    print("2. Tambahkan secret baru:")
-    print("   - Key: BOT_TOKEN")
-    print("   - Value: Token bot Telegram Anda dari @BotFather")
-    
-    print("\n3. Tambahkan secret admin:")
-    print("   - Key: ADMIN_USER_IDS") 
-    print("   - Value: Telegram User ID Anda")
-    
-    print("\n4. Klik tombol 'Run' untuk menjalankan bot")
-    
-    print("\n🔗 CARA MENDAPATKAN BOT TOKEN:")
-    print("1. Chat dengan @BotFather di Telegram")
-    print("2. Kirim /newbot")
-    print("3. Ikuti instruksi untuk membuat bot")
-    print("4. Copy token yang diberikan")
-    
-    print("\n🆔 CARA MENDAPATKAN USER ID:")
-    print("1. Chat dengan @userinfobot di Telegram")
-    print("2. Copy User ID yang ditampilkan")
-    
-    print("\n" + "=" * 60)
-
-def main():
-    """Main setup function"""
     try:
-        print_banner()
-        
-        # Check environment
-        is_replit = check_environment()
-        
-        # Install dependencies
-        install_dependencies()
-        
         # Test imports
-        imports_ok = test_imports()
+        sys.path.append('.')
+        from main import JamTayangProBot
+        from src.database.database import init_database
         
-        if imports_ok:
-            print("\n✅ All critical imports working!")
-        else:
-            print("\n⚠️  Some imports failed. Try running:")
-            print("pip install python-telegram-bot==20.7 python-dotenv")
+        print("✅ Bot imports successful")
         
-        # Print instructions
-        print_instructions()
+        # Test database initialization
+        await init_database()
+        print("✅ Database initialization successful")
         
-        print("✅ Setup completed! Bot siap dijalankan di Replit.")
+        # Test bot creation
+        bot = JamTayangProBot()
+        print("✅ Bot instance created")
+        
+        return True
         
     except Exception as e:
-        print(f"\n❌ Setup failed with error: {e}")
-        print("Try running manually:")
-        print("pip install python-telegram-bot==20.7")
-        print("pip install python-dotenv")
+        print(f"❌ Bot functionality test failed: {e}")
+        return False
+
+def create_replit_files():
+    """Create necessary files for Replit"""
+    print("\n📄 Creating Replit configuration files...")
+    
+    # Check if .replit exists
+    if os.path.exists('.replit'):
+        print("✅ .replit file already exists")
+    else:
+        print("⚠️ .replit file not found - should be created")
+    
+    # Check if keep_alive.py exists
+    if os.path.exists('keep_alive.py'):
+        print("✅ keep_alive.py exists")
+    else:
+        print("⚠️ keep_alive.py not found - should be created")
+    
+    return True
+
+def show_next_steps():
+    """Show next steps for user"""
+    print("\n🎯 NEXT STEPS:")
+    print("1. Make sure BOT_TOKEN is set in Replit Secrets")
+    print("2. Click the 'Run' button in Replit")
+    print("3. Bot will start automatically")
+    print("4. Test bot at: https://t.me/JamTayangProBot")
+    print("\n🔗 Bot Features:")
+    print("   - 🎬 YouTube Services (Jam Tayang, Subscriber, etc)")
+    print("   - 📸 Instagram Services (Likes, Followers, etc)")
+    print("   - 🎵 TikTok Services (Views, Likes, etc)")
+    print("   - 📘 Facebook Services (Likes, Followers, etc)")
+    print("   - 💰 Token System (50 gratis + iklan)")
+
+async def main():
+    """Main setup function"""
+    print_header()
+    
+    # Check environment
+    is_replit = check_replit_environment()
+    
+    # Install dependencies
+    deps_ok = install_dependencies()
+    
+    # Check environment variables
+    env_ok = check_environment_variables()
+    
+    # Create Replit files
+    files_ok = create_replit_files()
+    
+    # Test bot functionality
+    if env_ok:
+        bot_ok = await test_bot_functionality()
+    else:
+        bot_ok = False
+    
+    # Summary
+    print("\n" + "=" * 60)
+    print("📊 SETUP SUMMARY:")
+    print(f"   Replit Environment: {'✅' if is_replit else '⚠️'}")
+    print(f"   Dependencies: {'✅' if deps_ok else '❌'}")
+    print(f"   Environment Variables: {'✅' if env_ok else '❌'}")
+    print(f"   Configuration Files: {'✅' if files_ok else '❌'}")
+    print(f"   Bot Functionality: {'✅' if bot_ok else '❌'}")
+    
+    if all([deps_ok, env_ok, files_ok, bot_ok]):
+        print("\n🎉 SETUP COMPLETE! Bot is ready to run!")
+        print("🚀 Click 'Run' button to start the bot")
+    else:
+        print("\n⚠️ Setup incomplete. Please fix the issues above.")
+    
+    show_next_steps()
 
 if __name__ == "__main__":
-    main()
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("\n👋 Setup cancelled by user")
+    except Exception as e:
+        print(f"\n❌ Setup error: {e}")

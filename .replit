@@ -1,8 +1,11 @@
-language = "python3"
 run = "python main.py"
+modules = ["python-3.10"]
 
 [nix]
 channel = "stable-22_11"
+
+[env]
+PYTHONPATH = "$PYTHONPATH:."
 
 [deployment]
 run = ["sh", "-c", "python main.py"]
@@ -10,3 +13,11 @@ run = ["sh", "-c", "python main.py"]
 [[ports]]
 localPort = 8080
 externalPort = 80
+
+[languages]
+
+[languages.python3]
+pattern = "**/*.py"
+
+[languages.python3.languageServer]
+start = "pylsp"

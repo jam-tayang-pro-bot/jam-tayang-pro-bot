@@ -12,6 +12,16 @@ import os
 from dotenv import load_dotenv
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 
+# Keep alive for Replit
+try:
+    from keep_alive import keep_alive
+    keep_alive()
+    print("✅ Keep-alive server started for Replit")
+except ImportError:
+    print("ℹ️ Keep-alive not available (running locally)")
+except Exception as e:
+    print(f"⚠️ Keep-alive error: {e}")
+
 from src.bot.handlers import (
     start_handler, help_handler, register_handler, profile_handler,
     services_handler, token_handler, admin_handler, callback_handler
