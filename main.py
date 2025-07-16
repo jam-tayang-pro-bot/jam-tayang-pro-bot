@@ -9,6 +9,9 @@ By Kantong Aplikasi 2025 - https://www.kantongaplikasi.com/
 import asyncio
 import logging
 import os
+import signal
+import sys
+import threading
 from dotenv import load_dotenv
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 
@@ -41,6 +44,7 @@ class JamTayangProBot:
         self.bot_token = os.getenv('BOT_TOKEN')
         self.application = None
         self.scheduler = TaskScheduler()
+        self.running = False
         
     async def initialize(self):
         """Initialize bot and database"""
@@ -87,18 +91,32 @@ class JamTayangProBot:
         logger.info("All handlers added successfully")
     
     async def start(self):
-        """Start the bot"""
+        """Start the bot with auto-restart capability"""
         try:
             await self.initialize()
             
             logger.info("🚀 Jam Tayang Pro Bot is starting...")
             logger.info("By Kantong Aplikasi 2025 - https://www.kantongaplikasi.com/")
             
-            # Start polling
-            await self.application.run_polling(
-                allowed_updates=['message', 'callback_query'],
-                drop_pending_updates=True
-            )
+            self.running = True
+            
+            # Start polling with auto-restart
+            while self.running:
+                try:
+                    logger.info("Starting bot polling...")
+                    await self.application.run_polling(
+                        allowed_updates=['message', 'callback_query'],
+                        drop_pending_updates=True,
+                        close_loop=False
+                    )
+                except Exception as e:
+                    if self.running:
+                        logger.error(f"Polling error: {e}")
+                        logger.info("Restarting bot in 5 seconds...")
+                        await asyncio.sleep(5)
+                        continue
+                    else:
+                        break
             
         except Exception as e:
             logger.error(f"Bot startup failed: {e}")
@@ -107,6 +125,8 @@ class JamTayangProBot:
     async def stop(self):
         """Stop the bot gracefully"""
         try:
+            self.running = False
+            
             if self.scheduler:
                 await self.scheduler.stop()
             
@@ -120,28 +140,61 @@ class JamTayangProBot:
 
 async def handle_message(update, context):
     """Handle regular text messages"""
-    from src.bot.handlers.message_handler import process_message
-    await process_message(update, context)
+    try:
+        from src.bot.handlers.message_handler import process_message
+        await process_message(update, context)
+    except Exception as e:
+        logger.error(f"Error handling message: {e}")
 
 async def main():
-    """Main function"""
+    """Main function with better error handling"""
     bot = JamTayangProBot()
     
-    try:
-        await bot.start()
-    except KeyboardInterrupt:
-        logger.info("Received interrupt signal")
-    except Exception as e:
-        logger.error(f"Unexpected error: {e}")
-    finally:
-        await bot.stop()
+    # Setup signal handlers for graceful shutdown
+    def signal_handler(signum, frame):
+        logger.info(f"Received signal {signum}")
+        bot.running = False
+        asyncio.create_task(bot.stop())
+    
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+    
+    retry_count = 0
+    max_retries = 10
+    
+    while retry_count < max_retries:
+        try:
+            logger.info(f"🔄 Starting bot (attempt {retry_count + 1}/{max_retries})")
+            await bot.start()
+            break
+        except KeyboardInterrupt:
+            logger.info("Received interrupt signal")
+            break
+        except Exception as e:
+            retry_count += 1
+            logger.error(f"❌ Bot error (attempt {retry_count}): {e}")
+            if retry_count < max_retries:
+                logger.info(f"⏳ Retrying in 10 seconds...")
+                await asyncio.sleep(10)
+            else:
+                logger.error("💀 Max retries reached. Bot stopping.")
+                break
+        finally:
+            try:
+                await bot.stop()
+            except:
+                pass
 
 if __name__ == "__main__":
     # Check if bot token is provided
     if not os.getenv('BOT_TOKEN'):
         print("❌ BOT_TOKEN tidak ditemukan!")
         print("Silakan copy .env.example ke .env dan isi BOT_TOKEN Anda")
+        print("Atau set BOT_TOKEN di Replit Secrets")
         exit(1)
+    
+    print("🚀 Jam Tayang Pro Bot Starting...")
+    print("By Kantong Aplikasi 2025 - https://www.kantongaplikasi.com/")
     
     # Run the bot
     try:
@@ -149,4 +202,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("\n👋 Bot dihentikan oleh pengguna")
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"❌ Fatal Error: {e}")
+        import traceback
+        traceback.print_exc()

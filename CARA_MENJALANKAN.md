@@ -170,6 +170,30 @@ python main.py
 4. Cek tab "Console" untuk error messages
 5. Pastikan "Secrets" sudah diisi
 
+### **❌ Bot Tertutup Setelah Jalan (PENTING!)**
+**Masalah**: Bot berhasil jalan tapi tertutup setelah 1 jam
+
+**Solusi Terbaik**:
+1. **Upgrade Replit Hacker Plan** ($7/bulan)
+2. **Aktifkan "Always On"** di Settings
+3. **Bot akan jalan 24/7** tanpa tertutup
+
+**Solusi Gratis (Alternatif)**:
+1. **Setup UptimeRobot** di [uptimerobot.com](https://uptimerobot.com)
+2. **Monitor URL**: `https://[project-name].[username].repl.co`
+3. **Ping setiap 5 menit** untuk keep bot alive
+4. **Manual restart** jika bot sleep
+
+**Cara Restart Manual**:
+```bash
+# Di Replit Console:
+# 1. Klik tombol "Stop"
+# 2. Klik tombol "Run" 
+# 3. Test dengan /start di Telegram
+```
+
+📖 **Baca panduan lengkap**: `SOLUSI_BOT_TERTUTUP.md`
+
 ---
 
 ## 🎯 **CARA MENGGUNAKAN BOT:**
