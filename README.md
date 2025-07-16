@@ -1,16 +1,26 @@
-## Hi there 👋
+# Jam Tayang Pro - Telegram Bot
 
-<!--
-**jam-tayang-pro-bot/jam-tayang-pro-bot** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+Bot Telegram profesional untuk layanan peningkatan engagement sosial media dengan sistem token dan automation yang canggih.
 
-Here are some ideas to get you started:
+## Fitur Utama
+- 🎯 Layanan jam tayang, like, view untuk semua platform sosial media
+- 🎁 Registrasi gratis dengan bonus 50 token
+- 🤖 Sistem automation yang terlihat natural
+- 🔒 Deteksi IP anti-fraud
+- 💰 Sistem reward melalui iklan
+- 👨‍💼 Panel admin lengkap
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+## Teknologi
+- Python 3.8+
+- python-telegram-bot
+- SQLite/PostgreSQL
+- Redis
+- AsyncIO
+
+## Lisensi
+By Kantong Aplikasi 2025 - https://www.kantongaplikasi.com/
+
+## Instalasi
+```bash
+pip install -r requirements.txt
+python main.py
