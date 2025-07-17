@@ -9,9 +9,6 @@ By Kantong Aplikasi 2025 - https://www.kantongaplikasi.com/
 import asyncio
 import logging
 import os
-import signal
-import sys
-import threading
 from dotenv import load_dotenv
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 
@@ -30,7 +27,6 @@ from src.bot.handlers import (
     services_handler, token_handler, admin_handler, callback_handler
 )
 from src.database.database import init_database
-from src.services.scheduler import TaskScheduler
 from src.utils.logger import setup_logger
 
 # Load environment variables
@@ -43,15 +39,13 @@ class JamTayangProBot:
     def __init__(self):
         self.bot_token = os.getenv('BOT_TOKEN')
         self.application = None
-        self.scheduler = TaskScheduler()
-        self.running = False
         
     async def initialize(self):
         """Initialize bot and database"""
         try:
             # Initialize database
             await init_database()
-            logger.info("Database initialized successfully")
+            logger.info("✅ Database initialized successfully")
             
             # Create application
             self.application = Application.builder().token(self.bot_token).build()
@@ -59,14 +53,10 @@ class JamTayangProBot:
             # Add handlers
             self.add_handlers()
             
-            # Start scheduler
-            await self.scheduler.start()
-            logger.info("Task scheduler started")
-            
-            logger.info("Bot initialized successfully")
+            logger.info("✅ Bot initialized successfully")
             
         except Exception as e:
-            logger.error(f"Failed to initialize bot: {e}")
+            logger.error(f"❌ Failed to initialize bot: {e}")
             raise
     
     def add_handlers(self):
@@ -88,55 +78,37 @@ class JamTayangProBot:
         # Message handlers
         app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
         
-        logger.info("All handlers added successfully")
+        logger.info("✅ All handlers added successfully")
     
     async def start(self):
-        """Start the bot with auto-restart capability"""
+        """Start the bot"""
         try:
             await self.initialize()
             
             logger.info("🚀 Jam Tayang Pro Bot is starting...")
             logger.info("By Kantong Aplikasi 2025 - https://www.kantongaplikasi.com/")
             
-            self.running = True
-            
-            # Start polling with auto-restart
-            while self.running:
-                try:
-                    logger.info("Starting bot polling...")
-                    await self.application.run_polling(
-                        allowed_updates=['message', 'callback_query'],
-                        drop_pending_updates=True,
-                        close_loop=False
-                    )
-                except Exception as e:
-                    if self.running:
-                        logger.error(f"Polling error: {e}")
-                        logger.info("Restarting bot in 5 seconds...")
-                        await asyncio.sleep(5)
-                        continue
-                    else:
-                        break
+            # Start polling
+            logger.info("🔄 Starting bot polling...")
+            await self.application.run_polling(
+                allowed_updates=['message', 'callback_query'],
+                drop_pending_updates=True
+            )
             
         except Exception as e:
-            logger.error(f"Bot startup failed: {e}")
+            logger.error(f"❌ Bot startup failed: {e}")
             raise
     
     async def stop(self):
         """Stop the bot gracefully"""
         try:
-            self.running = False
-            
-            if self.scheduler:
-                await self.scheduler.stop()
-            
             if self.application:
                 await self.application.stop()
             
-            logger.info("Bot stopped gracefully")
+            logger.info("👋 Bot stopped gracefully")
             
         except Exception as e:
-            logger.error(f"Error stopping bot: {e}")
+            logger.error(f"❌ Error stopping bot: {e}")
 
 async def handle_message(update, context):
     """Handle regular text messages"""
@@ -144,53 +116,29 @@ async def handle_message(update, context):
         from src.bot.handlers.message_handler import process_message
         await process_message(update, context)
     except Exception as e:
-        logger.error(f"Error handling message: {e}")
+        logger.error(f"❌ Error handling message: {e}")
 
 async def main():
-    """Main function with better error handling"""
+    """Main function"""
     bot = JamTayangProBot()
     
-    # Setup signal handlers for graceful shutdown
-    def signal_handler(signum, frame):
-        logger.info(f"Received signal {signum}")
-        bot.running = False
-        asyncio.create_task(bot.stop())
-    
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
-    
-    retry_count = 0
-    max_retries = 10
-    
-    while retry_count < max_retries:
-        try:
-            logger.info(f"🔄 Starting bot (attempt {retry_count + 1}/{max_retries})")
-            await bot.start()
-            break
-        except KeyboardInterrupt:
-            logger.info("Received interrupt signal")
-            break
-        except Exception as e:
-            retry_count += 1
-            logger.error(f"❌ Bot error (attempt {retry_count}): {e}")
-            if retry_count < max_retries:
-                logger.info(f"⏳ Retrying in 10 seconds...")
-                await asyncio.sleep(10)
-            else:
-                logger.error("💀 Max retries reached. Bot stopping.")
-                break
-        finally:
-            try:
-                await bot.stop()
-            except:
-                pass
+    try:
+        await bot.start()
+    except KeyboardInterrupt:
+        logger.info("⏹️ Received interrupt signal")
+    except Exception as e:
+        logger.error(f"❌ Unexpected error: {e}")
+        import traceback
+        traceback.print_exc()
+    finally:
+        await bot.stop()
 
 if __name__ == "__main__":
     # Check if bot token is provided
     if not os.getenv('BOT_TOKEN'):
         print("❌ BOT_TOKEN tidak ditemukan!")
-        print("Silakan copy .env.example ke .env dan isi BOT_TOKEN Anda")
-        print("Atau set BOT_TOKEN di Replit Secrets")
+        print("💡 Silakan set BOT_TOKEN di Replit Secrets")
+        print("🔑 Token: 8122372630:AAG35qn3YixrhbUvpipCadcZ0mBstFsdx90")
         exit(1)
     
     print("🚀 Jam Tayang Pro Bot Starting...")
