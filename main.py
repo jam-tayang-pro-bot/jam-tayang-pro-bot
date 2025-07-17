@@ -12,6 +12,19 @@ import os
 from dotenv import load_dotenv
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 
+# Fix for event loop conflict in Replit
+try:
+    import nest_asyncio
+    nest_asyncio.apply()
+    print("✅ nest_asyncio applied for Replit compatibility")
+except ImportError:
+    print("ℹ️ nest_asyncio not available, installing...")
+    import subprocess
+    subprocess.check_call(['pip', 'install', 'nest-asyncio'])
+    import nest_asyncio
+    nest_asyncio.apply()
+    print("✅ nest_asyncio installed and applied")
+
 # Keep alive for Replit
 try:
     from keep_alive import keep_alive

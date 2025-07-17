@@ -86,8 +86,11 @@ def health():
     return {"status": "healthy", "timestamp": time.time()}
 
 def run():
-    """Run Flask server"""
-    app.run(host='0.0.0.0', port=8080, debug=False)
+    """Run Flask server with minimal logging"""
+    import logging
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR)
+    app.run(host='0.0.0.0', port=8080, debug=False, use_reloader=False, threaded=True)
 
 def keep_alive():
     """Start keep alive server in background thread"""

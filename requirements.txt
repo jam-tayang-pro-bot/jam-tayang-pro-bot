@@ -9,3 +9,4 @@ psutil==5.9.6
 flask==2.3.3
 fake-useragent==1.4.0
 beautifulsoup4==4.12.2
+nest-asyncio==1.5.8

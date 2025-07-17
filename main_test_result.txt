@@ -1,0 +1,23 @@
+🧪 TESTING MAIN.PY - COMPREHENSIVE TEST
+==================================================
+1. Testing basic Python imports...
+   ✅ Basic imports OK
+2. Testing external dependencies...
+   ❌ nest_asyncio not found, installing...
+
+❌ CRITICAL ERROR: Command '['C:\\Python313\\python.exe', '-m', 'pip', 'install', 'nest-asyncio']' returned non-zero exit status 1.
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\jam-tayang-pro-bot\test_main_output.py", line 43, in <module>
+    import nest_asyncio
+ModuleNotFoundError: No module named 'nest_asyncio'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\jam-tayang-pro-bot\test_main_output.py", line 48, in <module>
+    subprocess.run([sys.executable, '-m', 'pip', 'install', 'nest-asyncio'], check=True)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['C:\\Python313\\python.exe', '-m', 'pip', 'install', 'nest-asyncio']' returned non-zero exit status 1.
